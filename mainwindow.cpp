@@ -37,7 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     model->setHeaderData(model->fieldIndex("currency_id"), Qt::Horizontal, tr("Currency"));
     model->setHeaderData(model->fieldIndex("quantity"), Qt::Horizontal, tr("Quantity"));
+    model->setHeaderData(model->fieldIndex("price_btc"), Qt::Horizontal, tr("Price (BTC)"));
     model->setHeaderData(model->fieldIndex("market_value_btc"), Qt::Horizontal, tr("Market Value (BTC)"));
+    model->setHeaderData(model->fieldIndex("price_usd"), Qt::Horizontal, tr("Price (USD)"));
     model->setHeaderData(model->fieldIndex("market_value_usd"), Qt::Horizontal, tr("Market Value (USD)"));
     //model->setHeaderData(model->fieldIndex("year"), Qt::Horizontal, tr("Year"));
 
@@ -84,19 +86,36 @@ void MainWindow::updateMarketValue()
 {
     int currency_index = 1;//model->fieldIndex("currency_id");
     int quantity_index = model->fieldIndex("quantity");
+    int price_btc_index = model->fieldIndex("price_btc");
     int mv_btc_index = model->fieldIndex("market_value_btc");
+    int price_usd_index = model->fieldIndex("price_usd");
+    int mv_usd_index = model->fieldIndex("market_value_usd");
     QScopedPointer<MarketDataProvider> mdp(new CryptocoinChartsMDP());
+    double btc_usd_rate = mdp->getBtcUsdRate();
     for(int i = 0; i < model->rowCount(); ++i) {
         QSqlRecord r = model->record(i);
+
         QSqlField f_currency = r.field(currency_index);
         QSqlField f_quantity = r.field(quantity_index);
-        double quantity = f_quantity.value().toDouble();
+        QSqlField f_price_btc = r.field(price_btc_index);
         QSqlField f_market_value_btc("market_value_btc", QVariant::Double);
+        QSqlField f_price_usd = r.field(price_usd_index);
+        QSqlField f_market_value_usd("market_value_usd", QVariant::Double);
+
+        double quantity = f_quantity.value().toDouble();
         PriceValue price = mdp->getBtcPrice(f_currency.value().toString());
-        qDebug() << "price.value=" << price.value;
-        qDebug() << "f_market_value_btc=" << quantity * price.value;
+
+        f_price_btc.setValue(QVariant(price.value));
         f_market_value_btc.setValue(QVariant(quantity * price.value));
+
+        f_price_usd.setValue(QVariant(price.value * btc_usd_rate));
+        f_market_value_usd.setValue(QVariant(quantity * price.value * btc_usd_rate));
+
+        r.replace(price_btc_index, f_price_btc);
         r.replace(mv_btc_index, f_market_value_btc);
+        r.replace(price_usd_index, f_price_usd);
+        r.replace(mv_usd_index, f_market_value_usd);
+
         model->setRecord(i,r);
     }
 }

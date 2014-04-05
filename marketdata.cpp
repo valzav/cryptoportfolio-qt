@@ -62,9 +62,7 @@ void MarketDataProvider::addPriceToCache(const QString &trading_pair, double pri
     q.exec();
 }
 
-PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker) {
-    if(ticker == "BTC") return PriceValue(1.0, PriceValue::OK);
-    QString trading_pair = ticker.toLower() + "_btc";
+PriceValue CryptocoinChartsMDP::getPrice(const QString& trading_pair){
     PriceValue price = getPriceFromCache(trading_pair);
     if(true && price.status != PriceValue::OK) {
         QString url = "http://www.cryptocoincharts.info/v2/api/tradingPair/" + trading_pair;
@@ -76,9 +74,19 @@ PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker) {
             price.status = PriceValue::OK;
             addPriceToCache(trading_pair, price.value);
         }
-        qDebug() << "-- CryptocoinChartsMDP::getBtcPrice " << ticker << price;
+        qDebug() << "-- CryptocoinChartsMDP::getPrice " << trading_pair << price;
     }
     return price;
+}
+
+PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker) {
+    if(ticker == "BTC") return PriceValue(1.0, PriceValue::OK);
+    QString trading_pair = ticker.toLower() + "_btc";
+    return getPrice(trading_pair);
+}
+
+double CryptocoinChartsMDP::getBtcUsdRate() {
+    return getPrice("btc_usd").value;
 }
 
 QJsonObject sendRequest(const QString &url) {

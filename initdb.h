@@ -30,7 +30,7 @@ QSqlError initDb()
     addCurrency(q, "BTC", "Bitcoin");
     addCurrency(q, "LTC", "Litecoin");
 
-    if (!q.exec(QString("create table assets(id integer primary key, currency_id integer, quantity real, market_value_btc real, market_value_usd real)")))
+    if (!q.exec(QString("create table assets(id integer primary key, currency_id integer, quantity real, price_btc real, market_value_btc real, price_usd real, market_value_usd real)")))
         return q.lastError();
 
     if (!q.prepare(QString("insert into assets (currency_id, quantity) values (?, ?)")))
