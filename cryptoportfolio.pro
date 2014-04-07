@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     assetdelegate.cpp \
-    marketdata.cpp
+    marketdata.cpp \
+    asseteditdelegate.cpp
 
 HEADERS  += mainwindow.h \
     initdb.h \
     assetdelegate.h \
-    marketdata.h
+    marketdata.h \
+    asseteditdelegate.h
 
 FORMS    += mainwindow.ui

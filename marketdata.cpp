@@ -80,6 +80,7 @@ PriceValue CryptocoinChartsMDP::getPrice(const QString& trading_pair){
 }
 
 PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker) {
+    qDebug() << "========" << ticker;
     if(ticker == "BTC") return PriceValue(1.0, PriceValue::OK);
     QString trading_pair = ticker.toLower() + "_btc";
     return getPrice(trading_pair);

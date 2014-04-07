@@ -27,6 +27,7 @@ QSqlError initDb()
 
     if (!q.prepare(QString("insert into currencies (code, name) values (?, ?)")))
         return q.lastError();
+    addCurrency(q, "", "");
     addCurrency(q, "BTC", "Bitcoin");
     addCurrency(q, "LTC", "Litecoin");
 
@@ -35,10 +36,10 @@ QSqlError initDb()
 
     if (!q.prepare(QString("insert into assets (currency_id, quantity) values (?, ?)")))
         return q.lastError();
-    q.addBindValue(1);
+    q.addBindValue(2);
     q.addBindValue(0.1);
     q.exec();
-    q.addBindValue(2);
+    q.addBindValue(3);
     q.addBindValue(0.2);
     q.exec();
 
