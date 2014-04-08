@@ -8,7 +8,7 @@ class AssetEditDelegate : public QItemDelegate
     Q_OBJECT
 public:
     explicit AssetEditDelegate(QObject *parent = 0);
-    //void setEditorData(QWidget *editor, const QModelIndex &index) const;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 
 signals:

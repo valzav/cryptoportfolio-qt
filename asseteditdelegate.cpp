@@ -8,18 +8,21 @@ AssetEditDelegate::AssetEditDelegate(QObject *parent) :
 }
 
 
-//void AssetEditDelegate::setEditorData(QWidget *editor,
-//                          const QModelIndex &index) const
-//   {
-////     if (!editor->metaObject()->userProperty().isValid()) {
-////       if (editor->property("currentIndex").isValid()) {
-////         editor->setProperty("currentIndex", index.data());
-////         return;
-////       }
-////     }
-//    qDebug() << "Delegate::setEditorData";
-//     QItemDelegate::setEditorData(editor, index);
-//   }
+void AssetEditDelegate::setEditorData(QWidget *editor,
+                          const QModelIndex &index) const
+   {
+
+    qDebug() << "--- Delegate::setEditorData" << index.data();
+
+    //QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel *>(model);
+    //QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : 0;
+    QComboBox *combo = qobject_cast<QComboBox *>(editor);
+    if (!combo) {
+        QItemDelegate::setEditorData(editor, index);
+        return;
+    }
+    combo->setCurrentIndex(combo->findText(index.data().toString()));
+   }
 
 void AssetEditDelegate::setModelData(QWidget *editor,
                      QAbstractItemModel *model,
@@ -43,10 +46,9 @@ void AssetEditDelegate::setModelData(QWidget *editor,
     int currentItem = combo->currentIndex();
     int childColIndex = childModel->fieldIndex(sqlModel->relation(index.column()).displayColumn());
     int childEditIndex = childModel->fieldIndex(sqlModel->relation(index.column()).indexColumn());
-    sqlModel->setData(index,
-            childModel->data(childModel->index(currentItem, childColIndex), Qt::DisplayRole),
-            Qt::DisplayRole);
-    sqlModel->setData(index,
-            childModel->data(childModel->index(currentItem, childEditIndex), Qt::EditRole),
-            Qt::EditRole);
+    QVariant data1 = childModel->data(childModel->index(currentItem, childColIndex), Qt::DisplayRole);
+    QVariant data2 = childModel->data(childModel->index(currentItem, childEditIndex), Qt::EditRole);
+    qDebug() << "---- setModelData" << data1 << data2;
+    sqlModel->setData(index, data1, Qt::DisplayRole);
+    sqlModel->setData(index, data2, Qt::EditRole);
 }

@@ -64,7 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mapper->setSubmitPolicy(QDataWidgetMapper::AutoSubmit);
     //mapper->setItemDelegate(new QSqlRelationalDelegate(this));
     //mapper->setItemDelegate(new QItemDelegate(this));
-    mapper->setItemDelegate(new AssetEditDelegate(this));
+    AssetEditDelegate *delegate = new AssetEditDelegate(this);
+    mapper->setItemDelegate(delegate);
     mapper->setModel(model);
     mapper->addMapping(ui->quantityEdit, model->fieldIndex("quantity"));
     //mapper->addMapping(ui->yearEdit, model->fieldIndex("year"));
@@ -73,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QSqlTableModel *relationModel = model->relationModel(currency_column_index);
     ui->currencyComboBox->setModel(relationModel);
     ui->currencyComboBox->setModelColumn(relationModel->fieldIndex("code"));
+    ui->currencyComboBox->installEventFilter(delegate);
     mapper->addMapping(ui->currencyComboBox, currency_column_index);
 
 
@@ -169,5 +171,8 @@ void MainWindow::on_currencyComboBox_currentIndexChanged(int index)
     int childColIndex = childModel->fieldIndex("code");
     QVariant new_value = childModel->data(childModel->index(index, childColIndex), Qt::DisplayRole);
 
-    if(current_value != new_value) mapper->submit();
+    if(current_value != new_value) {
+        qDebug() << "---- on_currencyComboBox_currentIndexChanged" << current_value << "->" << new_value;
+        mapper->submit();
+    }
 }
