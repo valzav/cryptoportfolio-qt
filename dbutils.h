@@ -3,27 +3,26 @@
 
 #include <QtSql>
 
-void addCurrency(QSqlQuery &q, const QString &code, const QString &name)
-{
+void addCurrency(QSqlQuery &q, const QString &code, const QString &name) {
     q.addBindValue(code);
     q.addBindValue(name);
     q.exec();
 }
 
-void addBook(QSqlQuery &q, const QString &title, int year)
-{
+void addBook(QSqlQuery &q, const QString &title, int year) {
     q.addBindValue(title);
     q.addBindValue(year);
     q.exec();
 }
 
 
-QSqlError initDb()
-{
+QSqlError initDb() {
     QSqlQuery q;
 
     if (!q.exec(QString("create table currencies(id integer primary key, code varchar, name varchar, description varchar, btc_price_path varchar)")))
         return q.lastError();
+    if (!q.exec(QString("create unique index idx_currencies_code ON currencies(code)")))
+       return q.lastError();
 
     if (!q.prepare(QString("insert into currencies (code, name) values (?, ?)")))
         return q.lastError();
@@ -48,6 +47,23 @@ QSqlError initDb()
      if (!q.exec(QString("create unique index idx_trading_pair ON pricecache(trading_pair)")))
         return q.lastError();
 
+    return QSqlError();
+}
+
+QSqlError updateCurrenciesTable(const QList<Currency>& list) {
+    QSqlQuery q;
+    for(QList<Currency>::const_iterator i=list.begin(); i!=list.end(); ++i) {
+        q.prepare(QString("select name from currencies where code=?"));
+        q.addBindValue(i->code);
+        q.exec();
+        if(q.next()) { q.clear(); continue; }
+        q.clear();
+
+        q.prepare(QString("insert into currencies (code, name) values (?, ?)"));
+        q.addBindValue(i->code);
+        q.addBindValue(i->name);
+        if(!q.exec()) return q.lastError();
+    }
     return QSqlError();
 }
 

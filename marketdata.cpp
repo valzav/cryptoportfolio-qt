@@ -15,7 +15,7 @@
 
 #include "marketdata.h"
 
-QJsonObject sendRequest(const QString &url);
+QJsonDocument sendRequest(const QString &url);
 
 QString PriceValue::toString() const {
     QString res;
@@ -62,12 +62,12 @@ void MarketDataProvider::addPriceToCache(const QString &trading_pair, double pri
     q.exec();
 }
 
-PriceValue CryptocoinChartsMDP::getPrice(const QString& trading_pair){
-    PriceValue price = getPriceFromCache(trading_pair);
-    if(true && price.status != PriceValue::OK) {
+PriceValue CryptocoinChartsMDP::getPrice(const QString& trading_pair, bool force_refresh){
+    PriceValue price = force_refresh ? PriceValue(0.0, PriceValue::EXPIRED) : getPriceFromCache(trading_pair);
+    if(price.status != PriceValue::OK) {
         QString url = "http://www.cryptocoincharts.info/v2/api/tradingPair/" + trading_pair;
         qDebug() << "CryptocoinChartsMDP::getBtcPrice url: " << url;
-        QJsonObject json = sendRequest(url);
+        QJsonObject json = sendRequest(url).object();
         if(json.contains("price")){
             QString price_str = json["price"].toString();
             price.value = price_str.toDouble();
@@ -79,18 +79,35 @@ PriceValue CryptocoinChartsMDP::getPrice(const QString& trading_pair){
     return price;
 }
 
-PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker) {
+PriceValue CryptocoinChartsMDP::getBtcPrice(const QString &ticker, bool force_refresh) {
     if(ticker == "") return PriceValue(0.0, PriceValue::OK);
     if(ticker == "BTC") return PriceValue(1.0, PriceValue::OK);
     QString trading_pair = ticker.toLower() + "_btc";
-    return getPrice(trading_pair);
+    return getPrice(trading_pair, force_refresh);
 }
 
 double CryptocoinChartsMDP::getBtcUsdRate() {
     return getPrice("btc_usd").value;
 }
 
-QJsonObject sendRequest(const QString &url) {
+void CryptocoinChartsMDP::getCurrenciesList(QList<Currency>& list) {
+    QJsonDocument doc = sendRequest("http://www.cryptocoincharts.info/v2/api/listCoins");
+    QJsonArray array = doc.array();
+    //qDebug() << "-- json: " << doc;
+    for(QJsonArray::const_iterator i=array.constBegin(); i != array.constEnd(); ++i) {
+        const QJsonValue &val = *i;
+        QJsonObject obj = val.toObject();
+        //qDebug() << ":::: volume:::" << obj["volume_btc"];
+        double volume = obj["volume_btc"].toString().toDouble();
+        if(volume > 1.0) { // let's filter out low volume alt coins
+          Currency c; c.code = obj["id"].toString().toUpper(); c.name = obj["name"].toString();
+          list.append(c);
+          //qDebug() << "-- value: " << c << list.length();
+        }
+    }
+}
+
+QJsonDocument sendRequest(const QString &url) {
     // create custom temporary event loop on stack
     QEventLoop eventLoop;
     // "quit()" the event-loop, when the network request "finished()"
@@ -103,15 +120,15 @@ QJsonObject sendRequest(const QString &url) {
     eventLoop.exec(); // blocks stack until "finished()" has been called
     if (reply->error() == QNetworkReply::NoError) {
         QString strReply = (QString)reply->readAll();
-        qDebug() << "Response:" << strReply;
+        //qDebug() << "Response:" << strReply;
         QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
         delete reply;
-        return jsonResponse.object();
+        return jsonResponse;
     }
     else {
         //failure
         qDebug() << "sendRequest failure: " <<reply->errorString();
         delete reply;
     }
-    return QJsonObject();
+    return QJsonDocument();
 }

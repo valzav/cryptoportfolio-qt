@@ -105,7 +105,7 @@
           <string>&lt;b&gt;Currency:&lt;/b&gt;</string>
          </property>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -130,6 +130,19 @@
            </widget>
           </item>
          </layout>
+        </widget>
+        <widget class="QPushButton" name="refreshMarketButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>200</y>
+           <width>151</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Refresh Market Data</string>
+         </property>
         </widget>
        </widget>
       </item>

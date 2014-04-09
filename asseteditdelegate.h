@@ -12,6 +12,7 @@ public:
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 
 signals:
+    void dataChanged(const QModelIndex &index) const;
 
 public slots:
 
