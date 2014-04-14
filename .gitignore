@@ -1,2 +1,8 @@
+.qmake.stash
+Makefile
 *.user
 *.db
+*.app
+tests/*.user
+tests/Makefile
+tests/*.app

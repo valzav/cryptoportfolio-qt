@@ -9,6 +9,7 @@ namespace Ui {
     class MainWindow;
 }
 class MarketDataProvider;
+class DBHelper;
 
 class MainWindow : public QMainWindow
 {
@@ -34,7 +35,7 @@ private:
     void refreshMarketDataRow(int row_index, bool force_refresh);
     QSqlRelationalTableModel *model;
     Ui::MainWindow *ui;
-    QSqlDatabase db;
+    DBHelper *db_helper;
     QDataWidgetMapper *mapper;
     MarketDataProvider *market;
     int currency_column_index;

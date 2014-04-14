@@ -1,22 +1,29 @@
-#ifndef INITDB_H
-#define INITDB_H
+#include "dbhelper.h"
+#include "marketdata.h"
 
-#include <QtSql>
-
-void addCurrency(QSqlQuery &q, const QString &code, const QString &name) {
-    q.addBindValue(code);
-    q.addBindValue(name);
-    q.exec();
+DBHelper::DBHelper(const QString &_db_path)
+    : db_path(_db_path)
+{
 }
 
-void addBook(QSqlQuery &q, const QString &title, int year) {
-    q.addBindValue(title);
-    q.addBindValue(year);
-    q.exec();
+DBHelper::~DBHelper() {
+    db.close();
 }
 
+QSqlError DBHelper::initDb() {
+    if (!QSqlDatabase::drivers().contains("QSQLITE")) {
+        QSqlError er("", "Unable to find database driver", QSqlError::ConnectionError, -1);
+        return er;
+    }
 
-QSqlError initDb() {
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(db_path);
+
+    if (!db.open()) return db.lastError();
+
+    QStringList tables = db.tables();
+    if (tables.contains("assets", Qt::CaseInsensitive)) return QSqlError();
+
     QSqlQuery q;
 
     if (!q.exec(QString("create table currencies(id integer primary key, code varchar, name varchar, description varchar, btc_price_path varchar)")))
@@ -26,9 +33,9 @@ QSqlError initDb() {
 
     if (!q.prepare(QString("insert into currencies (code, name) values (?, ?)")))
         return q.lastError();
-    addCurrency(q, "", "");
-    addCurrency(q, "BTC", "Bitcoin");
-    addCurrency(q, "LTC", "Litecoin");
+    addCurrency("", "");
+    addCurrency("BTC", "Bitcoin");
+    addCurrency("LTC", "Litecoin");
 
     if (!q.exec(QString("create table assets(id integer primary key, currency_id integer, quantity real, price_btc real, market_value_btc real, price_usd real, market_value_usd real)")))
         return q.lastError();
@@ -50,7 +57,7 @@ QSqlError initDb() {
     return QSqlError();
 }
 
-QSqlError updateCurrenciesTable(const QList<Currency>& list) {
+QSqlError DBHelper::updateCurrenciesTable(const QList<Currency>& list) {
     QSqlQuery q;
     for(QList<Currency>::const_iterator i=list.begin(); i!=list.end(); ++i) {
         q.prepare(QString("select name from currencies where code=?"));
@@ -67,4 +74,15 @@ QSqlError updateCurrenciesTable(const QList<Currency>& list) {
     return QSqlError();
 }
 
-#endif
+
+void DBHelper::addCurrency(const QString &code, const QString &name) {
+    q.addBindValue(code);
+    q.addBindValue(name);
+    q.exec();
+}
+
+void DBHelper::addBook(const QString &title, int year) {
+    q.addBindValue(title);
+    q.addBindValue(year);
+    q.exec();
+}

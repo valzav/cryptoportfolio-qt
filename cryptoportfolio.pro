@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += sql core gui network
+QT       += sql core gui network testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,11 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     marketdata.cpp \
-    asseteditdelegate.cpp
+    asseteditdelegate.cpp \
+    dbhelper.cpp
 
 HEADERS  += mainwindow.h \
     marketdata.h \
     asseteditdelegate.h \
-    dbutils.h
+    dbhelper.h
 
 FORMS    += mainwindow.ui

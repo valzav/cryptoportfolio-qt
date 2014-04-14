@@ -3,7 +3,7 @@
 #include "ui_mainwindow.h"
 #include "asseteditdelegate.h"
 #include "marketdata.h"
-#include "dbutils.h"
+#include "dbhelper.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -17,21 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QString db_path = data_path + QDir::separator() + QString("assets.db");
     qDebug() << "DB path : " << db_path;
 
-    if (!QSqlDatabase::drivers().contains("QSQLITE"))
-        QMessageBox::critical(this, "Unable to load database", "This demo needs the SQLITE driver");
-
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(db_path);
-
-    if (!db.open()) { showError(db.lastError()); return; }
-
-    QStringList tables = db.tables();
-    if (!tables.contains("assets", Qt::CaseInsensitive)) {
-        QSqlError err = initDb();
-        if (err.type() != QSqlError::NoError) {
-            showError(err);
-            return;
-        }
+    db_helper = new DBHelper(db_path);
+    QSqlError err = db_helper->initDb();
+    if (err.type() != QSqlError::NoError) {
+        showError(err);
+        throw err;
     }
 
     market = new CryptocoinChartsMDP();
@@ -75,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mapper->addMapping(ui->quantityEdit, model->fieldIndex("quantity"));
 
     QSqlTableModel *relationModel = model->relationModel(currency_column_index);
+    relationModel->sort(relationModel->fieldIndex("code"), Qt::AscendingOrder);
     ui->currencyComboBox->setModel(relationModel);
     ui->currencyComboBox->setModelColumn(relationModel->fieldIndex("code"));
     ui->currencyComboBox->installEventFilter(delegate);
@@ -106,15 +97,15 @@ void MainWindow::showError(const QSqlError &err)
 MainWindow::~MainWindow()
 {
     model->submitAll();
-    db.close();
     delete ui;
     delete market;
+    delete db_helper;
 }
 
 void MainWindow::updateCurrencies() {
     QList<Currency> list;
     market->getCurrenciesList(list);
-    QSqlError err = updateCurrenciesTable(list);
+    QSqlError err = db_helper->updateCurrenciesTable(list);
     if (err.type() != QSqlError::NoError) {
         showError(err);
         return;
