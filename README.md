@@ -3,7 +3,7 @@
 _Description: Simple QT GUI application to track market value of your cryptocurrencies portfolio, pulls prices from cryptocoincharts.info_
 
 ### Screenshot
-![alt tag](http://imgur.com/X50LCEv)
+![alt tag](http://i.imgur.com/X50LCEv.png)
 
 ## Installation
 There are no installation packages availalbe yet. I'll be happy to create some if I see somebody interested in this.
