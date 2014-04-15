@@ -13,12 +13,12 @@ TEMPLATE = app
 
 
 SOURCES += \
-    ../marketdata.cpp \
+    ../src/marketdata.cpp \
     testmarketdata.cpp \
-    ../dbhelper.cpp
+    ../src/dbhelper.cpp
 
 HEADERS  += \
-    ../marketdata.h \
+    ../src/marketdata.h \
     testmarketdata.h \
-    ../dbhelper.h
+    ../src/dbhelper.h
 

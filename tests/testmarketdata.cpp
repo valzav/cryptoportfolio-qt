@@ -1,7 +1,7 @@
 #include <QtTest/QtTest>
 #include "testmarketdata.h"
-#include "../marketdata.h"
-#include "../dbhelper.h"
+#include "../src/marketdata.h"
+#include "../src/dbhelper.h"
 
 TestMarketData::TestMarketData(QObject *parent) :
     QObject(parent), db_helper(NULL), market(NULL)
